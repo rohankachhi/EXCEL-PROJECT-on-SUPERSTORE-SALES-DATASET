@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SuperStore Sales Analysis & Executive Strategy</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --bg-dark: #0f172a;
+      --card-bg: #1e293b;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent-blue: #38bdf8;
+      --accent-green: #34d399;
+      --accent-red: #f87171;
+      --accent-amber: #fbbf24;
+      --border-color: #334155;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 100vh;
+      overflow: hidden;
+    }
+
+    /* Header & Navigation */
+    header {
+      padding: 20px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border-color);
+      background-color: rgba(15, 23, 42, 0.8);
+      backdrop-filter: blur(8px);
+    }
+
+    .logo {
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      color: var(--accent-blue);
+      text-transform: uppercase;
+    }
+
+    .slide-counter {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+
+    /* Slide Container */
+    main {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px 40px;
+      position: relative;
+    }
+
+    .slide {
+      display: none;
+      width: 100%;
+      max-width: 1200px;
+      animation: fadeIn 0.4s ease-in-out forwards;
+    }
+
+    .slide.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Titles */
+    h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 10px;
+      line-height: 1.2;
+    }
+
+    h2 {
+      font-size: 1.8rem;
+      color: var(--accent-blue);
+      margin-bottom: 25px;
+      border-bottom: 2px solid var(--border-color);
+      padding-bottom: 8px;
+    }
+
+    p.subtitle {
+      font-size: 1.2rem;
+      color: var(--text-muted);
+      margin-bottom: 30px;
+    }
+
+    /* Grid Layouts */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 25px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+
+    .grid-4 {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+    }
+
+    /* Cards */
+    .card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+    }
+
+    .card.highlight-green {
+      border-left: 4px solid var(--accent-green);
+    }
+
+    .card.highlight-red {
+      border-left: 4px solid var(--accent-red);
+    }
+
+    .card.highlight-blue {
+      border-left: 4px solid var(--accent-blue);
+    }
+
+    .metric-value {
+      font-size: 2rem;
+      font-weight: 700;
+      margin: 10px 0 5px 0;
+    }
+
+    .metric-value.positive { color: var(--accent-green); }
+    .metric-value.negative { color: var(--accent-red); }
+    .metric-value.neutral { color: var(--accent-blue); }
+
+    .metric-label {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .card-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 10px;
+      color: var(--text-main);
+    }
+
+    .card-body {
+      font-size: 0.95rem;
+      line-height: 1.5;
+      color: var(--text-muted);
+    }
+
+    .card-body strong {
+      color: var(--text-main);
+    }
+
+    /* Table Styling */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: var(--card-bg);
+      border-radius: 8px;
+      overflow: hidden;
+      margin-top: 10px;
+    }
+
+    th, td {
+      padding: 14px 18px;
+      text-align: left;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    th {
+      background-color: #26334d;
+      color: var(--accent-blue);
+      font-weight: 600;
+      text-transform: uppercase;
+      font-size: 0.85rem;
+      letter-spacing: 0.5px;
+    }
+
+    td {
+      font-size: 0.95rem;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+      font-weight: 700;
+    }
+
+    /* Footer & Controls */
+    footer {
+      padding: 20px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 1px solid var(--border-color);
+      background-color: rgba(15, 23, 42, 0.8);
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 12px;
+    }
+
+    button {
+      background-color: var(--card-bg);
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+      padding: 10px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.2s ease;
+    }
+
+    button:hover {
+      background-color: var(--accent-blue);
+      color: var(--bg-dark);
+      border-color: var(--accent-blue);
+    }
+
+    button:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+      border-color: var(--border-color);
+      background-color: var(--card-bg);
+      color: var(--text-main);
+    }
+
+    /* Chart Container */
+    .chart-container {
+      position: relative;
+      height: 280px;
+      width: 100%;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="logo">SuperStore Analytics</div>
+    <div class="slide-counter" id="slideCounter">Slide 1 of 5</div>
+  </header>
+
+  <main>
+    <!-- SLIDE 1: Title & Executive Summary -->
+    <div class="slide active" id="slide1">
+      <h1>SuperStore Sales & Revenue Performance</h1>
+      <p class="subtitle">Senior Business Analyst Executive Report</p>
+      
+      <div class="grid-4" style="margin-bottom: 25px;">
+        <div class="card highlight-blue">
+          <div class="metric-label">Monthly Revenue</div>
+          <div class="metric-value neutral">$320,722.98</div>
+          <div class="card-body">Total: <strong>$1,924,337.88</strong></div>
+        </div>
+        <div class="card highlight-green">
+          <div class="metric-label">Growth (MoM / H1)</div>
+          <div class="metric-value positive">+15.92%</div>
+          <div class="card-body">June MoM (+29.33% Jan-Jun)</div>
+        </div>
+        <div class="card highlight-green">
+          <div class="metric-label">Top Performer</div>
+          <div class="metric-value positive">$23,865.90</div>
+          <div class="card-body">Fellowes PB500 ($69k Sales)</div>
+        </div>
+        <div class="card highlight-red">
+          <div class="metric-label">Primary Risk</div>
+          <div class="metric-value negative">-$27,621.25</div>
+          <div class="card-body">Polycom ViewStation Losses</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Executive Briefing</div>
+        <div class="card-body">
+          Revenue growth remains strong, led by high-performing enterprise hardware and top-tier B2B sales[cite: 1]. However, overall enterprise profitability is severely dragged down by heavy category discounting (Tables, Bookcases) and regional loss leaders in the South[cite: 1].
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 2: Key Business Insights -->
+    <div class="slide" id="slide2">
+      <h2>Key Business Insights</h2>
+      <div class="grid-3">
+        <div class="card highlight-red">
+          <div class="card-title">1. Uncontrolled Discounting</div>
+          <div class="card-body">
+            <strong>Insight:</strong> Deep discount rates exceeding 20% on high-volume sub-categories—specifically <strong>Tables</strong> and <strong>Bookcases</strong>—generate top-line revenue while consistently yielding negative net margins[cite: 1].<br><br>
+            <strong>Recommendation:</strong> Enforce a strict 15% discount cap on low-margin furniture items and re-evaluate bundled promotional rules[cite: 1].
+          </div>
+        </div>
+        <div class="card highlight-green">
+          <div class="card-title">2. B2B Profit Stability</div>
+          <div class="card-body">
+            <strong>Insight:</strong> The Corporate and Small Business customer segments generate over <strong>60% of overall profit</strong> due to larger order values and consistent reorder cycles compared to individual consumer purchases[cite: 1].<br><br>
+            <strong>Recommendation:</strong> Reallocate sales incentives toward securing multi-year corporate contracts and offering tiered volume incentives rather than upfront price cuts[cite: 1].
+          </div>
+        </div>
+        <div class="card highlight-amber">
+          <div class="card-title">3. Freight Costs on Low Basket Size</div>
+          <div class="card-body">
+            <strong>Insight:</strong> Express Air and Same Day shipping modes are frequently selected for low-margin Office Supplies orders, resulting in unrecovered freight costs that erase transaction profits[cite: 1].<br><br>
+            <strong>Recommendation:</strong> Institute minimum basket thresholds ($50+) for expedited shipping eligibility or adjust shipping surcharge tiers for non-corporate accounts[cite: 1].
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 3: Regional Sales Breakdown -->
+    <div class="slide" id="slide3">
+      <h2>Regional Sales & Performance Breakdown</h2>
+      <div class="grid-2">
+        <div>
+          <table>
+            <thead>
+              <tr>
+                <th>Region</th>
+                <th>Total Sales ($)</th>
+                <th>% Overall Sales</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>East</td>
+                <td>$592,171.49</td>
+                <td>30.77%</td>
+              </tr>
+              <tr>
+                <td>West</td>
+                <td>$526,776.57</td>
+                <td>27.37%</td>
+              </tr>
+              <tr>
+                <td>Central</td>
+                <td>$448,284.70</td>
+                <td>23.29%</td>
+              </tr>
+              <tr>
+                <td>South</td>
+                <td>$357,105.12</td>
+                <td>18.56%</td>
+              </tr>
+              <tr>
+                <td>North</td>
+                <td>$0.00</td>
+                <td>0.00%</td>
+              </tr>
+              <tr>
+                <td>Total</td>
+                <td>$1,924,337.88</td>
+                <td>100.00%</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="card">
+          <div class="card-title">Sales Distribution by Region</div>
+          <div class="chart-container">
+            <canvas id="regionChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 4: Executive Regional Action Required -->
+    <div class="slide" id="slide4">
+      <h2>Executive Action Required: Regional Focus</h2>
+      <div class="grid-3">
+        <div class="card highlight-red">
+          <div class="card-title">Turnaround South Region</div>
+          <div class="card-body">
+            The South generates <strong>$357,105.12 (18.56%)</strong> but runs at a net negative profit margin of <strong>-4.04% (-$14,424.05 profit)</strong> due to steep discounting and high shipping costs[cite: 1].<br><br>
+            <strong>Action:</strong> Immediately cap freight subsidies and restrict discounting on non-profitable technology and furniture lines[cite: 1].
+          </div>
+        </div>
+        <div class="card highlight-green">
+          <div class="card-title">Scale High-Margin Markets</div>
+          <div class="card-body">
+            East and West generate <strong>58.14%</strong> of revenue[cite: 1]. Central delivers the highest profit margin at <strong>17.26% ($77,365.47 profit)</strong>[cite: 1].<br><br>
+            <strong>Action:</strong> Reallocate promotional budget toward Central to expand high-margin accounts and protect supplier stock in East/West hubs[cite: 1].
+          </div>
+        </div>
+        <div class="card highlight-blue">
+          <div class="card-title">Audit North Territory</div>
+          <div class="card-body">
+            Sales for the North region currently stand at <strong>$0.00 (0.00% contribution)</strong>[cite: 1].<br><br>
+            <strong>Action:</strong> Verify whether this represents an unmapped geographic market or a data integration bug in sales logging, then initiate a feasibility study for expansion[cite: 1].
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 5: Strategic Roadmap -->
+    <div class="slide" id="slide5">
+      <h2>Key Strategic Recommendations</h2>
+      <div class="grid-3">
+        <div class="card">
+          <div class="card-title">1. Price Floors on Hardware</div>
+          <div class="card-body">
+            Audit vendor contracts and establish strict minimum order pricing for high-end technology products (e.g., Polycom conferencing units and dot matrix printers) that consistently generate negative net profit margins despite high sales volume[cite: 1].
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">2. Revise Furniture Shipping</div>
+          <div class="card-body">
+            Restructure freight surcharges and base margins on heavy items, specifically <strong>Tables (-3.74% profit margin)</strong> and <strong>Bookcases (-0.86% profit margin)</strong>, to prevent shipping overhead from outstripping product margins[cite: 1].
+          </div>
+        </div>
+        <div class="card highlight-green">
+          <div class="card-title">3. Focus on High-Margin Essentials</div>
+          <div class="card-body">
+            Reallocate promotional spend and prime catalog placement toward high-margin sub-categories like <strong>Binders & Accessories (31.89% margin / $59,296.39 profit)</strong> and <strong>Copiers & Fax (24.22% margin)</strong> to maximize bottom-line ROI[cite: 1].
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="btn-group">
+      <button id="prevBtn" onclick="changeSlide(-1)">Previous</button>
+      <button id="nextBtn" onclick="changeSlide(1)">Next</button>
+    </div>
+    <div style="font-size: 0.85rem; color: var(--text-muted);">
+      Press Left/Right arrow keys to navigate
+    </div>
+  </footer>
+
+  <script>
+    let currentSlide = 1;
+    const totalSlides = 5;
+
+    function updateSlide() {
+      // Hide all slides
+      document.querySelectorAll('.slide').forEach(slide => {
+        slide.classList.remove('active');
+      });
+      
+      // Show active slide
+      document.getElementById(`slide${currentSlide}`).classList.add('active');
+      
+      // Update counter
+      document.getElementById('slideCounter').innerText = `Slide ${currentSlide} of ${totalSlides}`;
+      
+      // Button states
+      document.getElementById('prevBtn').disabled = currentSlide === 1;
+      document.getElementById('nextBtn').disabled = currentSlide === totalSlides;
+    }
+
+    function changeSlide(direction) {
+      currentSlide += direction;
+      if (currentSlide < 1) currentSlide = 1;
+      if (currentSlide > totalSlides) currentSlide = totalSlides;
+      updateSlide();
+    }
+
+    // Keyboard navigation
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === 'Space') {
+        if (currentSlide < totalSlides) changeSlide(1);
+      } else if (e.key === 'ArrowLeft') {
+        if (currentSlide > 1) changeSlide(-1);
+      }
+    });
+
+    // Chart.js Initialization
+    window.onload = function() {
+      const ctx = document.getElementById('regionChart').getContext('2d');
+      new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: ['East', 'West', 'Central', 'South'],
+          datasets: [{
+            data: [592171.49, 526776.57, 448284.70, 357105.12],
+            backgroundColor: [
+              '#38bdf8',
+              '#34d399',
+              '#fbbf24',
+              '#f87171'
+            ],
+            borderWidth: 0
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: {
+                color: '#f8fafc',
+                font: { size: 12 }
+              }
+            }
+          }
+        }
+      });
+    };
+  </script>
+</body>
+</html>
